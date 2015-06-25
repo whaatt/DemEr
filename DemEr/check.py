@@ -1,12 +1,12 @@
 from DemEr import app
-from Flask import session
+from flask import session
 import functools
 
 def loggedIn(error):
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
-            if not session['user']:
+            if 'user' not in session:
                 return error #None or false
             else: return fn(*args, **kwargs)
         return wrapper
@@ -18,7 +18,7 @@ def ownership(error):
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
-            if not session['owner']:
+            if not session['user']['owner']:
                 return error #None or false
             else: return fn(*args, **kwargs)
         return wrapper

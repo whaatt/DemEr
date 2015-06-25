@@ -6,23 +6,25 @@ import helpers
 
 @app.route('/')
 def index():
-    if 'username' in session: return redirect('/dashboard')
-    else: return template('index.html')
+    if 'user' in session: #logged in
+        return redirect('/dashboard')
+    return template('index.html')
 
 @app.route('/dashboard')
 def dashboard():
-    if 'username' not in session: return redirect('/')
+    #user is logged out now
+    if 'user' not in session:
+        return redirect('/')
+    
     patients = helpers.getPatientData()
     doctors = helpers.getDoctorData()
     return template('dashboard.html', #filled in
-                    clinic = session['clinic'],
-                    code = session['code'],
+                    clinic = session['user']['clinic'],
                     patients = patients,
                     doctors = doctors)
 
 @app.route('/confirmation/<ID>')
 def confirmation(ID):
-    worked, owner = helpers.confirmUser(ID)
-    return template('confirmation.html',
-                    worked = worked,
-                    owner = owner)
+    worked, clinic, ownership = helpers.confirmUser(ID)
+    return template('confirmation.html', worked = worked,
+                    clinic = clinic, ownership = ownership)

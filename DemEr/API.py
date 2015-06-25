@@ -1,5 +1,4 @@
 #this file defines AJAX routes and validates shit
-from flask import render_template as template
 from flask import session, redirect, url_for, request, jsonify
 
 from DemEr import app
@@ -9,6 +8,9 @@ import re
 #this file is particularly ugly, but it mostly just validates
 #user API requests, dispatches them to the correct helper, and
 #returns the appropriate response. validation is a real PITA
+
+def isString(param): #parameter validation
+    return isinstance(param, (str, unicode))
 
 def clean(params, include):
     #filter dictionary keys using the passed array of includes
@@ -39,7 +41,7 @@ def editClinicName():
     params = request.get_json(force = True)
     if 'group' not in params:
         error('You must provide a new clinic name.')
-    if not (4 <= len(params['group']) <= 40):
+    if not isString(params['group']) or not (4 <= len(params['group']) <= 40):
         return error('Your group name had an invalid length.')
     
     worked = helpers.editClinicName(params['group'])
@@ -53,15 +55,16 @@ def register(): #AJAX user sign up
        'first' not in params or 'last' not in params or not
        (('group' not in params) ^ ('code' not in params))):
         return error('You must fill out all required fields.')
-    if not (8 <= len(params['password']) <= 40):
+    if not isString(params['password']) or not (8 <= len(params['password']) <= 40):
         return error('Your password had an invalid length.')
-    if not (2 <= len(params['first']) <= 30):
+    if not isString(params['first']) or not (2 <= len(params['first']) <= 30):
         return error('Your first name had an invalid length.')
-    if not (2 <= len(params['last']) <= 30):
+    if not isString(params['last']) or not (2 <= len(params['last']) <= 30):
         return error('Your last name had an invalid length.')
-    if not (6 <= len(params['email']) <= 50):
+    if not isString(params['email']) or not (6 <= len(params['email']) <= 50):
         return error('Your email had an invalid length.')
-    if 'group' in params and not (4 <= len(params['group']) <= 40):
+    if 'group' in params and (not isString(params['group'])
+        or not (4 <= len(params['group']) <= 40)):
         return error('Your group name had an invalid length.')
     
     group = None
@@ -76,31 +79,37 @@ def register(): #AJAX user sign up
     
     if group:
         worked = helpers.createUser(params, group = group) #new group
-        if not worked: return error('A user with that email exists.')
+        if not worked: return error('Duplicate email or group.')
         return success(None)
         
     elif code:
         worked = helpers.createUser(params, code = code) #join group
-        if not worked: return error('Invalid group code.')
+        if not worked: return error('Invalid code or duplicate email.')
         return success(None)
 
 @app.route('/api/user', methods = ['PUT'])
 def editUser(): #see note for editClinicName
     params = request.get_json(force = True)
-    if 'password' in params and not (8 <= len(params['password']) <= 40):
+    if 'current' not in params:
+        return error('You did not enter your current password.')
+    if 'password' in params and (not isString(params['password'])
+        or not (8 <= len(params['password']) <= 40)):
         return error('Your password had an invalid length.')
-    if 'first' in params and not (2 <= len(params['first']) <= 30):
+    if 'first' in params and (not isString(params['first'])
+        or not (2 <= len(params['first']) <= 30)):
         return error('Your first name had an invalid length.')
-    if 'last' in params and not (2 <= len(params['last']) <= 30):
+    if 'last' in params and (not isString(params['last'])
+        or not (2 <= len(params['last']) <= 30)):
         return error('Your last name had an invalid length.')
-    if 'email' in params and not (6 <= len(params['email']) <= 50):
-        return error('Your email had an invalid length.')
-        
-    #remove any invalid parameters quietly before we edit DB
-    params = clean(params, ['email', 'password', 'first', 'last'])
     
-    worked = helpers.editUser(params) #can edit self only
-    if not worked: return error('Incorrect permissions.')
+    #verify current password
+    current = params['current']
+    
+    #remove any invalid parameters quietly before we edit DB
+    params = clean(params, ['password', 'first', 'last'])
+    
+    worked = helpers.editUser(current, params) #can edit self
+    if not worked: return error('Incorrect password.')
     return success(None)
 
 @app.route('/api/user/<ID>/approve', methods = ['POST'])
@@ -124,7 +133,7 @@ def login(): #AJAX user login
     
     worked = helpers.loginUser(params) #sets session variable too
     if worked is None: return error('Incorrect login credentials.')
-    if not worked: return error('Unconfirmed login credentials.')
+    if not worked: return error('Unconfirmed or unapproved login credentials.')
     return success('/dashboard') #redirect user on front end
 
 @app.route('/logout')
@@ -138,9 +147,9 @@ def addPatient(): #AJAX add patient [TrueVault]
     if ('first' not in params or 'last' not in params or
        'times' not in params or 'phone' not in params):
         return error('You must fill out all required fields.')
-    if not (2 <= len(params['first']) <= 30):
+    if not isString(params['first']) or not (2 <= len(params['first']) <= 30):
         return error('Your first name had an invalid length.')
-    if not (2 <= len(params['last']) <= 30):
+    if not isString(params['last']) or not (2 <= len(params['last']) <= 30):
         return error('Your last name had an invalid length.')
     if not (0 < len(params['times']) <= 3):
         return error('You must set between one and three reminder times.')
@@ -168,9 +177,9 @@ def editPatient(ID): #AJAX edit patient [TrueVault]
     if ('first' not in params or 'last' not in params or
        'times' not in params or 'phone' not in params):
         return error('You must fill out all required fields.')
-    if not (2 <= len(params['first']) <= 30):
+    if not isString(params['first']) or not (2 <= len(params['first']) <= 30):
         return error('Your first name had an invalid length.')
-    if not (2 <= len(params['last']) <= 30):
+    if not isString(params['last']) or not (2 <= len(params['last']) <= 30):
         return error('Your last name had an invalid length.')
     if not (0 < len(params['times']) <= 3):
         return error('You must set between one and three reminder times.')
