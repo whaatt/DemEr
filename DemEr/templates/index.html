@@ -1,1 +1,128 @@
-Home Page!
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <title>{{ title }}</title>
+    
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/pnotify.custom.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet">
+
+    <!-- HTML5 shim for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header pull-left">
+          <a class="navbar-brand" href="#">{{ title }}</a>
+        </div>
+        <div id="navbar" class="navbar-header pull-right">
+          <form class="navbar-form navbar-right login-form">
+            <div class="form-group login">
+              <input type="text" placeholder="Email" name="email" class="form-control">
+            </div>
+            <div class="form-group login">
+              <input type="password" placeholder="Password" name="password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success login-button">Login</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Connect with your patients.</h1>
+        <p><b>50% of patients</b> forget to take their medication, causing <b>$289 billion in loss</b> every year.
+        <br class="take-break">
+        <b>{{ title }} sends text reminders to your patients to fix that.</b></p>
+        <p><a class="btn btn-primary btn-lg" href="#" role="button">Watch Video &raquo;</a>
+        <a class="btn btn-success btn-lg signup-button" href="#" role="button">Sign Up &raquo;</a></p>
+      </div>
+    </div>
+
+    <!-- div class="container">
+      <hr>
+      <footer>
+        <p>&copy; ReMed 2015</p>
+      </footer>
+    </div> <!-- /container -->
+    
+    <div class="modal fade signup-modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Create Account</h4>
+          </div>
+          <div class="modal-body signup-body">
+            <form class="signup-form">
+              <div class="form-group">
+                <input type="text" class="form-control" id="first" name="first" placeholder="First Name [2 to 30 characters]">
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="last" name="last" placeholder="Last Name [2 to 30 characters]">
+              </div>
+              <div class="form-group">
+                <input type="email" class="form-control" id="email" name="email" placeholder="Email [6 to 50 characters]">
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password [8 to 40 characters]">
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control" id="confirm" name="confirm" placeholder="Confirm Password">
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control hidden group-mode" id="group" name="group" placeholder="Group Name [4 to 40 characters]">
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control hidden code-mode" id="code" name="code" placeholder="Enter Group Code">
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control hidden code-mode" id="code-name" name="name" disabled="disabled" placeholder="Looking for a clinic with your code.">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success join-group">Join Group</button>
+            <button type="button" class="btn btn-primary create-group">Create Group</button>
+            <button type="button" class="hidden btn btn-info submit-signup">Submit</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    
+    <div class="modal fade success-modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+            <h4>Your account was successfully created! Please check your email to confirm your account.</h4>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-dismiss="modal">Awesome</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/jquery.serializejson.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pnotify.custom.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+  </body>
+</html>

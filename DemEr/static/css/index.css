@@ -1,0 +1,49 @@
+:focus, :active, :hover {
+    outline: 0 !important;
+    text-decoration: none !important;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+html {
+  height: 100%;
+  background: url(../images/hospital.jpg) no-repeat center left fixed;
+  background-size: cover;
+}
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+  padding-top: 64px;
+  height: 100%;
+}
+
+.jumbotron h1 {
+  color: #111 !important;
+}
+
+.login {
+  margin-right: 10px;
+}
+
+.navbar-header.pull-right {
+  margin-right: 5px;
+}
+
+.navbar-brand {
+  color: #FFF !important;
+}
+
+.jumbotron {
+  color: #222 !important;
+  background: rgba(0, 0, 0, 0);
+  background-position: center;
+}
+
+@media only screen and (max-width: 800px) {
+  .take-break, .navbar-form {
+    display: none;
+  }
+}

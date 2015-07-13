@@ -31,7 +31,7 @@ def success(data):
 @app.route('/api/clinic/<ID>')
 def getClinicName(ID): #AJAX registration helper
     worked = helpers.getClinicName(ID) #None or clinic name
-    if not worked: return error('No clinic by that name exists.')
+    if not worked: return error('No clinic found.')
     return success(worked)
 
 #not user agnostic, so weird but this makes
@@ -127,6 +127,7 @@ def approveUser(ID): #AJAX doctor approval
 @app.route('/api/login', methods = ['POST'])
 def login(): #AJAX user login
     params = request.get_json(force = True)
+    if 'user' in session: return success('/dashboard')
     if 'email' not in params or 'password' not in params:
         return error('You must fill out all required fields.')
     params = clean(params, ['email', 'password'])

@@ -12,6 +12,7 @@ from DemEr import app, mail, title
 client = MongoClient()
 db = client.ReMed
 import check
+import vault
 
 def getPatientData():
     #TODO: complete
@@ -35,10 +36,11 @@ def getDoctorData():
 
 #return None or clinic name
 def getClinicName(ID):
+    if not ObjectId.is_valid(ID): return None
     #do we want a more human-readable clinic code in the future?
     #this is good because we don't need to fuck with autoincrement
     clinic = db.clinics.find_one({'_id' : ObjectId(ID)})
-    if clinic: return clinic.name
+    if clinic: return clinic['name']
     return None
 
 #return None or name
@@ -59,7 +61,11 @@ def createUser(info, group = None, code = None):
     if userExist: return False #user previously exists
     
     if not code: #new group must be created
-        newClinic = db.clinics.insert_one({'name' : group})
+        vaultID = vault.createClinic(group)
+        if not vaultID: return False
+        
+        newClinic = db.clinics.insert_one({
+            'name' : group, 'vault' : vaultID})
         if not newClinic: return False
         code = str(newClinic.inserted_id)
         
@@ -68,6 +74,9 @@ def createUser(info, group = None, code = None):
         info['approved'] = True
         
     else: #verify that desired clinic exists
+        if not ObjectId.is_valid(code):
+            return false
+        
         oldClinic = db.clinics.find_one({
             '_id' : ObjectId(code)})
         if not oldClinic: return False
@@ -148,6 +157,9 @@ def editUser(current, info):
 @check.loggedIn(error = None)
 @check.ownership(error = None)
 def approveUser(ID):
+    if not ObjectId.is_valid(ID):
+        return False
+    
     result = db.users.update_one(
         {'_id' : ObjectId(ID), 'confirmed' : True,
          'clinic' : session['user']['clinic']},

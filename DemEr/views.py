@@ -1,14 +1,15 @@
 from flask import render_template as template
 from flask import session, redirect, url_for
 
-from DemEr import app
+from DemEr import app, title
 import helpers
 
 @app.route('/')
 def index():
     if 'user' in session: #logged in
         return redirect('/dashboard')
-    return template('index.html')
+    return template('index.html',
+                    title = title)
 
 @app.route('/dashboard')
 def dashboard():
