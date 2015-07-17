@@ -20,6 +20,23 @@ body {
   height: 100%;
 }
 
+.approve-confirm, .reject-confirm, .remove-confirm {
+  display: none;
+}
+
+/* I'm going to hell for this */
+.dataTables_filter {
+  display: none;
+}
+
+.panel-search {
+  margin-top: 23px;
+}
+
+.navbar-text {
+  color: #FFF !important;
+}
+
 .jumbotron h1 {
   color: #111 !important;
 }
@@ -42,8 +59,32 @@ body {
   background-position: center;
 }
 
-@media only screen and (max-width: 800px) {
+.navbar {
+  overflow: hidden !important;
+}
+
+.narrow-nav {
+  display: none;
+}
+
+@media only screen and (max-width: 992px) {
   .take-break, .navbar-form {
+    display: none;
+  }
+  
+  .logout-link {
+    display: block;
+  }
+  
+  .narrow-nav {
+    display: block;
+  }
+  
+  .narrow-nav a {
+    color: inherit !important;
+  }
+  
+  .wide-nav {
     display: none;
   }
 }

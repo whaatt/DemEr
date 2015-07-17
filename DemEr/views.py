@@ -18,14 +18,25 @@ def dashboard():
         return redirect('/')
     
     patients = helpers.getPatientData()
-    doctors = helpers.getDoctorData()
-    return template('dashboard.html', #filled in
-                    clinic = session['user']['clinic'],
+    doctors = [i for i in helpers.getDoctorData()
+        if i['email'] != session['user']['email']] #you
+    approved = [i for i in doctors if i['approved']]
+    pending = [i for i in doctors if not i['approved']]
+    
+    return template('dashboard.html', #filled in below
+                    clinic = session['user']['clinicName'],
+                    code = session['user']['clinicCode'],
+                    first = session['user']['first'],
+                    owner = session['user']['owner'],
+                    last = session['user']['last'],
                     patients = patients,
-                    doctors = doctors)
+                    approved = approved,
+                    pending = pending,
+                    title = title)
 
 @app.route('/confirmation/<ID>')
 def confirmation(ID):
-    worked, clinic, ownership = helpers.confirmUser(ID)
-    return template('confirmation.html', worked = worked,
-                    clinic = clinic, ownership = ownership)
+    worked, ownership, clinic = helpers.confirmUser(ID)
+    return template('confirmation.html',
+                    title = title, worked = worked,
+                    ownership = ownership, clinic = clinic,)

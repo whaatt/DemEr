@@ -120,7 +120,7 @@ def approveUser(ID): #AJAX doctor approval
     if not isinstance(params['accept'], bool):
         return error('Your approval value was faulty.')
     
-    worked = helpers.approveUser(ID)
+    worked = helpers.approveUser(ID, params['accept'])
     if not worked: return error('Incorrect permissions.')
     return success(None)
 

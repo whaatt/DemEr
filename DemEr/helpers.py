@@ -18,10 +18,9 @@ def getPatientData():
     #TODO: complete
     return None
 
-#data pertaining to doctors in YOUR clinic
+#data pertaining to doctors in the clinic
 #returns data with perms or None otherwise
 @check.loggedIn(error = None)
-@check.ownership(error = None)
 def getDoctorData():
     doctors = db.users.find({
         'clinic' : session['user']['clinic'],
@@ -130,6 +129,12 @@ def loginUser(info):
     if not user['confirmed']: return False
     if not user['approved']: return False
     session['user'] = user
+    clinicID = user['clinic']
+    
+    #add clinic name to the user session dictionary
+    clinic = db.clinics.find_one({'_id' : clinicID})
+    user['clinicName'] = clinic['name']
+    user['clinicCode'] = str(clinic['_id'])
     return True
 
 #no explicit return
@@ -156,25 +161,34 @@ def editUser(current, info):
 #returns boolean again
 @check.loggedIn(error = None)
 @check.ownership(error = None)
-def approveUser(ID):
-    if not ObjectId.is_valid(ID):
-        return False
+def approveUser(ID, accept):
+    if not ObjectId.is_valid(ID): return False
+    if ID == str(session['user']['_id']): return False
     
-    result = db.users.update_one(
-        {'_id' : ObjectId(ID), 'confirmed' : True,
-         'clinic' : session['user']['clinic']},
-        {'$set' : {'approved' : True}})
-    
-    if result.modified_count == 1:
+    result = db.users.update_one({'_id' : ObjectId(ID), 'confirmed' : True,
+         'clinic' : session['user']['clinic']}, {'$set' : {'approved' : accept}})
+        
+    if result.modified_count == 1 or accept == False:
         info = db.users.find_one({'_id' : ObjectId(ID)})
         if not info: return False #cover all of our bases
-        
-        userMsg = Message('Account Request Approved', #app title
-            sender = ('Example Administrator', 'test@example.com'),
-            recipients = [(info['first'] + ' ' + info['last'], info['email'])])
-        
-        userMsg.body = template('finalUser.txt', user = info)
-        userMsg.html = template('finalUser.html', user = info)
+            
+        if accept:
+            userMsg = Message('Account Approved', #app title
+                sender = ('Example Administrator', 'test@example.com'),
+                recipients = [(info['first'] + ' ' + info['last'], info['email'])])
+            userMsg.body = template('finalUser.txt', user = info, accept = True)
+            userMsg.html = template('finalUser.html', user = info, accept = True)
+            
+        else:
+            userMsg = Message('Account Removed', #app title
+                sender = ('Example Administrator', 'test@example.com'),
+                recipients = [(info['first'] + ' ' + info['last'], info['email'])])
+            userMsg.body = template('finalUser.txt', user = info, accept = False)
+            userMsg.html = template('finalUser.html', user = info, accept = False)
+            
+            deletion = db.users.delete_one({'_id' : ObjectId(ID)})
+            if deletion.deleted_count == 0: return False
+            
         mail.send(userMsg)
         return True
     

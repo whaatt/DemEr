@@ -1,5 +1,160 @@
-Dashboard page!
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <title>{{ title }}</title>
+    
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/pnotify.custom.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/pace.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+
+    <!-- HTML5 shim for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header pull-left">
+          <a class="navbar-brand" href="/dashboard">{{clinic}}</a>
+        </div>
+        <div id="navbar" class="navbar-header pull-right">
+          <span class="wide-nav">
+            <p class="navbar-text">{{first}} {{last}} / <span data-container="body" data-toggle="popover" data-placement="left" data-content="{{code}}">Click For Clinic Code</span></p>
+          </span>
+          <span class="narrow-nav">
+            <p class="navbar-text"><a>Logout</a></p>
+          </span>
+          <form class="navbar-form navbar-right" action="/logout">
+            <button type="submit" class="btn btn-success">Logout</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="panel panel-default panel-search">
+        <div class="panel-body">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <input type="text" class="form-control" autocomplete="off" id="search" placeholder="Search for a patient.">
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <h4 class="pull-right text-center"><a id="toggle-view">View Doctors</a> or <a id="add-patient">Add Patient</a></h4>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div id="patients">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Cell Phone</th>
+                  <th>Adherence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Nick</th>
+                  <td>Hershey</td>
+                  <td>(555) 555-555</td>
+                  <td>84%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="doctors">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+                  <th>{% if owner %}Manage{% else %}Status{% endif %}</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for doctor in pending %}
+                <tr>
+                  <td>{{ doctor.first }}</td>
+                  <td>{{ doctor.last }}</td>
+                  <td>{{ doctor.email }}</td>
+                  <td>
+                    {% if owner %}
+                    <a class="approve">Approve</a> 
+                    <span class="separator">or</span>
+                    <a class="reject">Reject</a>
+                    <span class="approve-confirm">Confirm approval? 
+                      <a class="approve-yes" data-id="{{ doctor._id }}">Yes</a> or <a class="approve-no">No</a>.
+                    </span>
+                    <span class="reject-confirm">Confirm rejection? 
+                      <a class="reject-yes" data-id="{{ doctor._id }}">Yes</a> or <a class="reject-no">No</a>.
+                    </span>
+                    {% else %}
+                    Pending
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              {% for doctor in approved %}
+                <tr>
+                  <td>{{ doctor.first }}</td>
+                  <td>{{ doctor.last }}</td>
+                  <td>{{ doctor.email }}</td>
+                  <td>
+                    {% if owner %}
+                    <a class="remove" data-id="{{ doctor._id }}">Remove</a>
+                    <span class="remove-confirm">Confirm removal? 
+                      <a class="remove-yes" data-id="{{ doctor._id }}">Yes</a> or <a class="remove-no">No</a>.
+                    </span>
+                    {% else %}
+                    Approved
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <span id="remove-template" class="hidden">
+      <a class="remove">Remove</a>
+      <span class="remove-confirm">Confirm removal? 
+        <a class="remove-yes">Yes</a> or <a class="remove-no">No</a>.
+      </span>
+    </span>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+    <script src="//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+    <script src="{{ url_for('static', filename='js/jquery.serializejson.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pnotify.custom.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pace.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  </body>
+</html>
+<!-- Dashboard page!
 {{ clinic }}
 {{ code }}
 {{ patients }}
-{{ doctors }}
+{{ doctors }} -->
