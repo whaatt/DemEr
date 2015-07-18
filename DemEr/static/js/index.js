@@ -6,41 +6,98 @@ function getAlert(text, type) {
 }
 
 $(document).ready(function() {
-    $('.login-button').click(function(e) {
-        e.preventDefault(); //semi-AJAXy login
-        var creds = $('.login-form').serializeJSON();
+    $('.forgot-button').click(function(e) {
+        e.preventDefault();
         $(this).attr('disabled', true);
         
-        $.ajax({
-            type : 'POST',
-            dataType : 'json',
-            contentType : 'application/json', 
-            url : '/api/login',
-            data : JSON.stringify(creds),
-            success : function(resp) {
-                if (!resp.success) {
+        //not the cleanest way to just get email?
+        var creds = $('.login-form').serializeJSON();
+        delete creds.password;
+        
+        Pace.track(function() {
+            $.ajax({
+                type : 'POST',
+                dataType : 'json',
+                contentType : 'application/json', 
+                url : '/api/user/forgot',
+                data : JSON.stringify(creds),
+                success : function(resp) {
+                    if (!resp.success) {
+                        var stack_bottomright = {
+                            'dir1' : 'up',
+                            'dir2' : 'left'
+                        };
+
+                        new PNotify({ // yay notifications
+                            title : 'Forgot Password',
+                            addclass : 'stack-bottomright',
+                            stack : stack_bottomright,
+                            text : resp.error,
+                            delay : 2000,
+                            type : 'error',
+                            icon : false
+                        });
+                        
+                        $('.forgot-button').attr('disabled', false);
+                        return false;
+                    }
+                    
                     var stack_bottomright = {
                         'dir1' : 'up',
                         'dir2' : 'left'
                     };
 
                     new PNotify({ // yay notifications
-                        title : 'Login Error',
+                        title : 'Forgot Password',
                         addclass : 'stack-bottomright',
                         stack : stack_bottomright,
-                        text : resp.error,
+                        text : resp.data,
                         delay : 2000,
-                        type : 'error',
+                        type : 'success',
                         icon : false
                     });
-                    
-                    $('.login-button').attr('disabled', false);
-                    return false;
                 }
-                
-                //resp.data contains redirect
-                window.location = resp.data;
-            }
+            });
+        });
+    });
+    
+    $('.login-button').click(function(e) {
+        e.preventDefault(); //semi-AJAXy login
+        var creds = $('.login-form').serializeJSON();
+        $(this).attr('disabled', true);
+        
+        Pace.track(function() {
+            $.ajax({
+                type : 'POST',
+                dataType : 'json',
+                contentType : 'application/json', 
+                url : '/api/login',
+                data : JSON.stringify(creds),
+                success : function(resp) {
+                    if (!resp.success) {
+                        var stack_bottomright = {
+                            'dir1' : 'up',
+                            'dir2' : 'left'
+                        };
+
+                        new PNotify({ // yay notifications
+                            title : 'Login Error',
+                            addclass : 'stack-bottomright',
+                            stack : stack_bottomright,
+                            text : resp.error,
+                            delay : 2000,
+                            type : 'error',
+                            icon : false
+                        });
+                        
+                        $('.login-button').attr('disabled', false);
+                        return false;
+                    }
+                    
+                    //resp.data contains redirect
+                    window.location = resp.data;
+                }
+            });
         });
     });
     
@@ -81,20 +138,22 @@ $(document).ready(function() {
             return false;
         }
         
-        $.ajax({
-            type : 'GET',
-            dataType : 'json',
-            contentType : 'application/json', 
-            url : '/api/clinic/' + $('#code').val(),
-            success : function(resp) {
-                if (!resp.success) {
-                    $('#code-name').val('');
-                    return false;
+        Pace.track(function() {
+            $.ajax({
+                type : 'GET',
+                dataType : 'json',
+                contentType : 'application/json', 
+                url : '/api/clinic/' + $('#code').val(),
+                success : function(resp) {
+                    if (!resp.success) {
+                        $('#code-name').val('');
+                        return false;
+                    }
+                    
+                    //resp.data contains clinic name
+                    $('#code-name').val(resp.data);
                 }
-                
-                //resp.data contains clinic name
-                $('#code-name').val(resp.data);
-            }
+            });
         });
     });
     
@@ -117,22 +176,24 @@ $(document).ready(function() {
         if (mode === 'create') delete account.code;
         else if (mode === 'join') delete account.group;
         
-        $.ajax({
-            type : 'POST',
-            dataType : 'json',
-            contentType : 'application/json', 
-            url : '/api/user/create',
-            data : JSON.stringify(account),
-            success : function(resp) {
-                if (!resp.success) {
-                    $('.signup-modal .alert').remove()
-                    $('.signup-body').prepend(getAlert(resp.error, 'danger'));
-                    $('.submit-signup').prop('disabled', false); return false;
+        Pace.track(function() {
+            $.ajax({
+                type : 'POST',
+                dataType : 'json',
+                contentType : 'application/json', 
+                url : '/api/user/create',
+                data : JSON.stringify(account),
+                success : function(resp) {
+                    if (!resp.success) {
+                        $('.signup-modal .alert').remove()
+                        $('.signup-body').prepend(getAlert(resp.error, 'danger'));
+                        $('.submit-signup').prop('disabled', false); return false;
+                    }
+                    
+                    $('.signup-modal').modal('hide');
+                    $('.success-modal').modal('show');
                 }
-                
-                $('.signup-modal').modal('hide');
-                $('.success-modal').modal('show');
-            }
+            });
         });
     });
 });

@@ -5,6 +5,10 @@ from pymongo import MongoClient
 from flask_mail import Message
 from flask import session
 
+#password generation
+import random
+import string
+
 #to store emails in a clean separated format
 from flask import render_template as template
 
@@ -13,6 +17,10 @@ client = MongoClient()
 db = client.ReMed
 import check
 import vault
+
+def randomWord(n):
+    #generates a pseudorandom alphanumeric string of length exactly n
+    return ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(n))
 
 def getPatientData():
     #TODO: complete
@@ -51,7 +59,10 @@ def editClinicName(name):
         {'_id' : session['user']['clinic']},
         {'$set' : {'name' : name}})
     
-    if result.modified_count == 1: return name
+    #not super safe but good enough
+    if result.matched_count == 1:
+        session['user']['clinicName'] = name
+        return name #unsure if necessary
     return None #something messed up
 
 #returns true on success or false on failure
@@ -142,6 +153,31 @@ def logoutUser():
     del session['user']
 
 #returns boolean success value
+def resetPassword(email):
+    user = db.users.find_one({'email' : email})
+    if not user: return False #bad email
+    
+    password = randomWord(10)
+    hash = pbkdf2_sha256.encrypt(password, rounds = 100000, salt_size = 10)
+    result = db.users.update_one({'email' : email}, {'$set' : {'password' : hash}})
+    if result.modified_count != 1: return False
+    
+    passMsg = Message('Password Reset', #app title
+        sender = ('Example Administrator', 'test@example.com'),
+        recipients = [(user['first'] + ' ' + user['last'], user['email'])])
+    passMsg.body = template('resetPass.txt', user = user, password = password)
+    passMsg.html = template('resetPass.html', user = user, password = password)
+    
+    mail.send(passMsg)
+    return True
+
+#returns watered down user object
+@check.loggedIn(error = None)
+def getUser():
+    return {'first' : session['user']['first'],
+            'last' : session['user']['last']}
+
+#returns boolean success value
 @check.loggedIn(error = None)
 def editUser(current, info):
     user = db.users.find_one({
@@ -150,13 +186,21 @@ def editUser(current, info):
     
     if not pbkdf2_sha256.verify(current, user['password']):
         return False #password was incorrect
+    
+    if 'password' in info:
+        hash = pbkdf2_sha256.encrypt(info['password'], rounds = 100000, salt_size = 10)
+        info['password'] = hash #store password in an encrypted, salted form
         
     result = db.users.update_one(
         {'_id' : session['user']['_id']},
         {'$set' : info}) #update fields
     
-    if result.modified_count == 1: return True
-    return False #something messed up
+    #not the safest but screw it
+    if result.matched_count == 1:
+        #update the session storage
+        session['user'].update(info)
+        return True
+    return False
 
 #returns boolean again
 @check.loggedIn(error = None)

@@ -87,6 +87,21 @@ def register(): #AJAX user sign up
         if not worked: return error('Invalid code or duplicate email.')
         return success(None)
 
+@app.route('/api/user/forgot', methods = ['POST'])
+def forgotUser(): #forgot user password
+    params = request.get_json(force = True)
+    if 'email' not in params:
+        return error('Please provide the account email to reset your password.')
+    worked = helpers.resetPassword(params['email'])
+    if not worked: return error('Invalid email provided.')
+    return success('Please check your email for a new password.')
+        
+@app.route('/api/user', methods = ['GET'])
+def getUser(): #get current user
+    user = helpers.getUser() #watered down mongo object
+    if not user: return error('Not authenticated.')
+    return success(user)
+
 @app.route('/api/user', methods = ['PUT'])
 def editUser(): #see note for editClinicName
     params = request.get_json(force = True)
@@ -94,7 +109,7 @@ def editUser(): #see note for editClinicName
         return error('You did not enter your current password.')
     if 'password' in params and (not isString(params['password'])
         or not (8 <= len(params['password']) <= 40)):
-        return error('Your password had an invalid length.')
+        return error('Your new password had an invalid length.')
     if 'first' in params and (not isString(params['first'])
         or not (2 <= len(params['first']) <= 30)):
         return error('Your first name had an invalid length.')
@@ -109,7 +124,8 @@ def editUser(): #see note for editClinicName
     params = clean(params, ['password', 'first', 'last'])
     
     worked = helpers.editUser(current, params) #can edit self
-    if not worked: return error('Incorrect password.')
+    if worked is None: return error('Incorrect permissions.')
+    elif not worked: return error('Incorrect password.')
     return success(None)
 
 @app.route('/api/user/<ID>/approve', methods = ['POST'])
